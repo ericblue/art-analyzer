@@ -1,0 +1,39 @@
+"Review the attached image and provide your analysis in the following JSON format:
+{
+  "summary": {
+    "artist": "The artist who you think may have authored the work",
+    "subjectMatter": "Briefly describe the subject of the artwork",
+    "medium": "Specify the medium or media used",  
+    "overallImpression": "Describe the overall feeling or atmosphere conveyed"
+  },
+  "critique": {
+    "compositionAndBalance": "Analysis of compositional elements and sense of harmony",
+    "useOfColor": "Discussion of color palette, mood set by colors", 
+    "brushworkAndTexture": "Analysis of artistic techniques and depth created",
+    "emotionalImpact": "Reflection on emotions piece may evoke",
+    "originalityAndCreativity": "Consideration of uniqueness of perspective or approach"
+  },
+  "composition": {
+    "colorPalette": "Provide a key/value summary of the color palette listing the colors and in detail for each major area of the painting",
+    "hexColors": "List out all colors in hex format in detail for each major area of the painting. The values should be an array."
+  },
+  "similarArtists": [
+    {
+      "artistName": "Name of first similar artist",
+      "artistBirthYear": "Birth year of the similar artist",
+      "artistDeathYear": "Death year of the similar artist", 
+      "artistWikipediaLink": "Wikipedia link of the similar artist",
+      "explanation": "Brief explanation of stylistic or thematic similarities"
+    },
+   "similarPaintings": [
+    {
+      "artist": "Detailed information about the artist similar in format to the similarArtists data",
+      "painting": "Brief description of the painting and explanation of stylistic or thematic similarities",
+      "paintingLink": "A link to an image of the painting that can be used as a thumbnail",
+      "yearOfPainting": "The year of the painting"
+    },
+  ]
+}
+
+After conducting your analysis, return the results in the specified JSON format to provide consistency across all responses.  
+Provide up to 5 similarArtists and 5 similarPaintings. Do not provide any commentary other than pure JSON output."
