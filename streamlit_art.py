@@ -19,7 +19,7 @@ LOGGER.setLevel(logging.DEBUG)
 DEBUG = False
 
 # Save JSON response for testing
-SAVE_JSON = True
+SAVE_JSON = False
 
 # If LoadLocalJSON is enabled, load OpenAI JSON responses from disk
 LOAD_LOCAL_JSON = False
