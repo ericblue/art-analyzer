@@ -220,10 +220,12 @@ def process_hex_colors(data):
 
 def render_results(response_obj):
 
+    tab_titles = ["Summary", "Critique", "Composition", "Similar Artists", "Similar Paintings"]
+
     if DEBUG:
-         tabs = st.tabs(["Summary", "Critique", "Composition", "Similar Artists", "Similar Paintings", "JSON Output"])
-    else:
-        tabs = st.tabs(["Summary"])
+         tab_titles.append("JSON Output")
+    
+    tabs = st.tabs(tab_titles)
 
     # Summary Tab
     with tabs[0]:
