@@ -14,3 +14,4 @@ out/
 .factorypath
 debug
 .envrc
+.env

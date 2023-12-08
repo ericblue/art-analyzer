@@ -10,6 +10,7 @@ import time
 import base64
 import requests
 import json
+import sys
 
 # Enable logger
 LOGGER = logging.getLogger(__name__)
@@ -24,21 +25,15 @@ SAVE_JSON = False
 # If LoadLocalJSON is enabled, load OpenAI JSON responses from disk
 LOAD_LOCAL_JSON = False
 
-# Allow users to set their own OpenAI API Key, otherwise load from OPENAI_API_KEY env variable
-INPUT_OPENAI_KEY = True
-
+# Load from OPENAI_API_KEY env variable, otherwise allow users to set their own OpenAI API Key
 def get_openai_api_key():
-    if not INPUT_OPENAI_KEY:
-        try:
-            api_key = os.environ["OPENAI_API_KEY"]
-        except KeyError:
-            st.error("OPENAI_API_KEY environment variable is not set.")
-            st.stop()
-    else:
+    # Loading OpenAI API Key from environment variable
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        # Loading OpenAI API Key from user input
         api_key = st.text_input("Enter your OpenAI API key:")
 
     return api_key
-
 
 def save_image_to_temp(uploaded_file):
     buffer = uploaded_file.getbuffer()
@@ -407,12 +402,7 @@ def render_sidebar():
             st.markdown("---")
 
 # Main Streamlit App
-def main(): 
-
-    # Note: Streamlit does not persist session state across page reloads, disable for now
-    #if 'num_requests' not in st.session_state:
-    #    st.session_state.num_requests = 0
-
+def main():
 
     st.title("Art Analyzer")
     st.header("Analyze artwork using GPT Vision and LLM")
@@ -490,27 +480,23 @@ def main():
     # Require OpenAI API key and file upload for processing
     else:
 
-        if 'require_openai_api_key' in st.session_state:
-            api_key = st.text_input('OpenAI API Key')
+        api_key = get_openai_api_key()
 
-        else:
-            api_key = get_openai_api_key()
+        if DEBUG:
 
-            if DEBUG:
+            LOGGER.info("Enabling load local json toggle...")
+            local_json_enabled = st.toggle("Load local JSON")
 
-                LOGGER.info("Enabling load local json toggle...")
-                local_json_enabled = st.toggle("Load local JSON")
+            global LOAD_LOCAL_JSON
 
-                global LOAD_LOCAL_JSON
+            if local_json_enabled:
+                LOGGER.info("Setting  LOAD_LOCAL_JSON = True")
+                LOAD_LOCAL_JSON = True
+            else:
+                LOGGER.info("Setting  LOAD_LOCAL_JSON = False")
+                LOAD_LOCAL_JSON = False
 
-                if local_json_enabled:
-                    LOGGER.info("Setting  LOAD_LOCAL_JSON = True")
-                    LOAD_LOCAL_JSON = True
-                else:
-                    LOGGER.info("Setting  LOAD_LOCAL_JSON = False")
-                    LOAD_LOCAL_JSON = False
-
-            uploaded_file = st.file_uploader("Choose an image...")
+        uploaded_file = st.file_uploader("Choose an image...")
 
         if uploaded_file is not None:
 
@@ -531,4 +517,4 @@ def main():
 
 
 if __name__ == '__main__':
-  main()
+    main()
