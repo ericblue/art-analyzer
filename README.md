@@ -77,6 +77,29 @@ docker run -p 8080:8501 ericblue/artanalyzer:0.1
 docker run -p 8080:8501 --env-file .env ericblue/artanalyzer:0.1
 ```   
 
+## Running on Heroku
+
+This app has been tested on Heroku (https://heroku.com/) deploying as a Docker image and running with the Python buildpack.
+For the application name, I used artanalyzer-eb in this example, but you can use any name you like.
+```
+# Create a new Heroku app
+heroku create  artanalyzer-eb
+
+# Login to the container registry
+heroku container:login
+
+# Push the container
+heroku container:push web -a artanalyzer-eb
+
+# Release the container
+heroku container:release web -a artanalyzer-eb
+
+# Note: Make sure to set PORT to 80 var under Settings > Config Vars
+# And, if you want to use a default key make sure to set OPENAI_API_KEY 
+
+# Open with the public URL
+heroku open -a artanalyzer-eb
+```
 
 ## Known Issues
 
