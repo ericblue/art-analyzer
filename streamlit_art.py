@@ -12,6 +12,7 @@ import requests
 import json
 import sys
 import re
+import version
 
 # Enable logger
 LOGGER = logging.getLogger(__name__)
@@ -465,14 +466,16 @@ def render_sidebar():
             st.markdown("---")
             st.markdown("# About")
             st.markdown("""
-            Analyze artwork using GPT Vision and LLM
-            """)
+            Art Analyzer - Analyze artwork using GPT Vision and LLM - Version 
+            """ +  version.__version__)
             st.markdown("""
             This tool is a work in progress. You can contribute to the project on GitHub (https://github.com/ericblue/art-analyzer) with your feedback and suggestions💡.
 
-            Created by Eric Blue (https://eric-blue.com & https://ericblueart.com).
-
+            **Author**: Eric Blue\n
+            **Web**: https://eric-blue.com\n
+            **Art**: https://ericblueart.com
             """)
+
             st.markdown("---")
 
             st.markdown(

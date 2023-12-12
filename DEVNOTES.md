@@ -12,8 +12,18 @@ Otherwise the latest development code resides in the main branch.
 Update README.md _Version History_ section and Tag the release
 
 ```
-git tag -a v0.x -m "Release v0.x"
-git push origin v0.x
+make release VERSION=-0.x
+```
+
+Note: Attempts to recreate a new tagged release will fail.  
+
+You will need to delete the tag first. Proceed with caution.
+
+```
+[git output]
+hint: Updates were rejected because the tag already exists in the remote.
+
+git push --delete origin v0.x
 ```
 
 ### Version Updates - Docker
@@ -23,13 +33,13 @@ Build releases for deployment to Docker Hub (https://hub.docker.com/r/ericblue/a
 #### Tagged Version
 
 ```
-make build TAG=v0.x
-make push TAG=v0.x
+make buildDocker TAG=v0.x
+make pushDocker TAG=v0.x
 ```
 
 #### Latest Version
 
 ```
-make build
-make push
+make buildDocker
+make pushDocker
 ```
