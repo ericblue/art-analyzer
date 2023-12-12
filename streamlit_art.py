@@ -11,6 +11,7 @@ import base64
 import requests
 import json
 import sys
+import re
 
 # Enable logger
 LOGGER = logging.getLogger(__name__)
@@ -71,12 +72,37 @@ def extract_json(data):
 
   return None
 
+def is_valid_json(string):
+    try:
+        json_object = re.match(
+            r'^{"[^"]*":[^,]*,?}$', string
+        )
+    except:
+        return False
+
+    if not json_object:
+        try:
+            json_array = re.match(
+                r'^\[[^\]]*\]$', string
+            )
+        except:
+            return False
+
+    if json_object or json_array:
+        return True
+    else:
+        return False
+
 def process_response_json(response_json):
 
     # Remove JSON encoding at start and end - e.g. "content": "```json\n{...json string...}\n```"
     #content_json = response_json["choices"][0]["message"]["content"]
     content_json = extract_json(response_json["choices"][0]["message"]["content"])
     LOGGER.debug(content_json)
+
+    # TODO test and fix regex
+    # if not is_valid_json(content_json):
+    #     raise Exception("Invalid JSON response from OpenAI API" + content_json)
 
     response_obj = json.loads(content_json)
 
@@ -215,151 +241,208 @@ def process_hex_colors(data):
 
 def render_results(response_obj):
 
+    if DEBUG:
+        st.write("Response Object = ", response_obj)
+
+    if response_obj == None:
+        raise Exception("No response from OpenAI API, Response object is None")
+
+    if "error" in response_obj:
+        st.error("OpenAI Error: " + response_obj["error"])
+        raise Exception("OpenAI API error: ", response_obj["error"])
+
     tab_titles = ["Summary", "Critique", "Composition", "Similar Artists", "Similar Paintings"]
 
     if DEBUG:
-         tab_titles.append("JSON Output")
+        tab_titles.append("JSON Output")
     
     tabs = st.tabs(tab_titles)
+    empty_value = "Unknown"
 
     # Summary Tab
     with tabs[0]:
 
-        summary=response_obj["summary"]
-
         st.header("Summary")
 
-        st.subheader("Artist")
-        st.write(summary["artist"])
+        if "summary" not in response_obj:
+            st.write("No summary data found")
 
-        st.subheader("Subject Matter")
-        st.write(summary["subjectMatter"])
+        else:
+            summary=response_obj["summary"]
 
-        st.subheader("Medium")
-        st.write(summary["medium"])
+            st.subheader("Artist")
+            st.write(summary.get("artist", empty_value))
 
-        st.subheader("Overall Impression")
-        st.write(summary["overallImpression"])
+            st.subheader("Painting Name")
+            st.write(summary.get("paintingName", empty_value))
+
+            st.subheader("Subject Matter")
+            st.write(summary.get("subjectMatter", empty_value))
+
+            st.subheader("Medium")
+            st.write(summary.get("medium", empty_value))
+
+            st.subheader("Overall Impression")
+            st.write(summary.get("overallImpression", empty_value))
 
     # Critique Tab
     with tabs[1]:
 
-        critique=response_obj["critique"]
-
         st.header("Critique")
 
-        st.subheader("Composition and Balance")
-        st.write(critique["compositionAndBalance"])
+        if "critique" not in response_obj:
+            st.write("No critique data found")
 
-        st.subheader("Use of Color")
-        st.write(critique["useOfColor"])
+        else:
 
-        st.subheader("Brushwork and Texture")
-        st.write(critique["brushworkAndTexture"])
+            critique=response_obj["critique"]
 
-        st.subheader("Originality and Creativity")
-        st.write(critique["originalityAndCreativity"])
+            st.subheader("Composition and Balance")
+            st.write(critique.get("compositionAndBalance", empty_value))
+
+            st.subheader("Use of Color")
+            st.write(critique.get("useOfColor", empty_value))
+
+            st.subheader("Brushwork and Texture")
+            st.write(critique.get("brushworkAndTexture", empty_value))
+
+            st.subheader("Originality and Creativity")
+            st.write(critique.get("originalityAndCreativity", empty_value))
 
     # Composition Tab
     with tabs[2]:
 
-        composition=response_obj["composition"]
-
         st.header("Composition")
 
-        st.subheader("Color Palette")
+        if "composition" not in response_obj:
+            st.write("No critique data found")
 
-        color_palette = composition["colorPalette"]
+        else:
 
-        # Convert to DataFrame with keys as Color column and values as Description
-        df = pd.DataFrame.from_dict(color_palette, orient='index') 
+            composition=response_obj["composition"]
 
-        # Rename columns
-        df = df.rename(columns={0:'Description'})
-        df.insert(0, 'Area', df.index)
+            st.subheader("Color Palette")
 
+            if "colorPalette" not in composition:
+                st.write("Unknown")
 
-        # Reorder columns 
-        df = df[['Area', 'Description']]
-        del df[df.columns[0]]
-        st_table = df.to_html(escape=False)
-        st.markdown(st_table, unsafe_allow_html=True)
+            else:
+                color_palette = composition["colorPalette"]
 
-        st.markdown("\n")
-        st.subheader("Hex Colors")
+                # Convert to DataFrame with keys as Color column and values as Description
+                df = pd.DataFrame.from_dict(color_palette, orient='index')
 
-        hex_colors = process_hex_colors(composition["hexColors"])
-        df = pd.DataFrame(hex_colors, columns=["Area", "Colors"])
+                # Rename columns
+                df = df.rename(columns={0:'Description'})
+                df.insert(0, 'Area', df.index)
 
-        st_table = df.to_html(escape=False)
-        st.markdown(st_table, unsafe_allow_html=True)
+                # Reorder columns
+                df = df[['Area', 'Description']]
+                del df[df.columns[0]]
+                st_table = df.to_html(escape=False)
+                st.markdown(st_table, unsafe_allow_html=True)
 
+                st.markdown("\n")
+
+            st.subheader("Hex Colors")
+
+            if "hexColors" not in composition:
+                st.write("Unknown")
+
+            else:
+                hex_colors = process_hex_colors(composition["hexColors"])
+                df = pd.DataFrame(hex_colors, columns=["Area", "Colors"])
+
+                st_table = df.to_html(escape=False)
+                st.markdown(st_table, unsafe_allow_html=True)
 
     # Similar Artists Tab
     with tabs[3]:
 
-        similar_artists=response_obj["similarArtists"]
-
         st.header("Similar Artists")
 
-        if len(similar_artists) > 1:
-
-            # Reformat rows to include Artist birth/death and wikipedia link
-            for row in similar_artists:
-                name = f"{row['artistName']} ({row['artistBirthYear']}-{row['artistDeathYear']})"
-                #link = f'{row["artistWikipediaLink"]}'
-                link = f'<a href="{row["artistWikipediaLink"]} target="_blank">{row["artistWikipediaLink"]}</a>'
-                row["Artist"] = f"{name} {link}"
-                row["Explanation"] = row["explanation"]
-
-            # Use upper-case syntax for Columns
-            df = pd.DataFrame( similar_artists, columns=("Artist", "Explanation"))
-
-            #st.table(df)
-
-            # Convert table to markdown format for easier rendering of HTML/href links
-            st_table = df.to_html(escape=False)
-            st.markdown(st_table, unsafe_allow_html=True)
+        if "similarArtists" not in response_obj:
+            st.write("No similar artist data found")
 
         else:
-            st.write("No similar artists found")
+
+            similar_artists=response_obj["similarArtists"]
+
+            if len(similar_artists) >= 1:
+
+                # Reformat rows to include Artist birth/death and wikipedia link
+                for row in similar_artists:
+                    name = f"{row['artistName']} ({row['artistBirthYear']}-{row['artistDeathYear']})"
+                    #link = f'{row["artistWikipediaLink"]}'
+                    link = f'<a href="{row["artistWikipediaLink"]} target="_blank">{row["artistWikipediaLink"]}</a>'
+                    row["Artist"] = f"{name} {link}"
+                    row["Explanation"] = row["explanation"]
+
+                # Use upper-case syntax for Columns
+                df = pd.DataFrame( similar_artists, columns=("Artist", "Explanation"))
+
+                # Convert table to markdown format for easier rendering of HTML/href links
+                st_table = df.to_html(escape=False)
+                st.markdown(st_table, unsafe_allow_html=True)
+
+            else:
+                st.write("No similar artists found")
 
     # Similar Paintings Tab
     with tabs[4]:
 
-        similar_paintings=response_obj["similarPaintings"]
-
         st.header("Similar Paintings")
 
-        if len(similar_paintings) > 1:
-
-
-            # Reformat rows 
-            for row in similar_paintings:
-                # artistName = f"{row['artistName']} ({row['artistBirthYear']}-{row['artistDeathYear']})"
-                # link = f'<a href="{row["artistWikipediaLink"]} target="_blank">{row["artistWikipediaLink"]}</a>'
-                # row["Artist"] = f"{artistName}"
-
-                # Outputting full object for now, since this may be a complex object or string
-                row["Artist"] = row["artist"]
-
-                paintingName = f"{row['painting']} ({row['yearOfPainting']})"
-                row["Painting"] = f"{paintingName}"
-
-                # Painting links are reliable, so excluding for now
-                short_link = row["paintingLink"][:100]
-                link = f'<a href="{row["paintingLink"]} target="_blank">{short_link}</a>'
-                row["PaintingLink"] = f"{link}"
-                row["Year"] = row["yearOfPainting"]
-
-
-             # Use upper-case syntax for Columns
-            df = pd.DataFrame( similar_paintings, columns=("Artist", "Painting", "Year"))
-            st_table = df.to_html(escape=False)
-            st.markdown(st_table, unsafe_allow_html=True)
+        if "similarPaintings" not in response_obj:
+            st.write("No similar painting data found")
 
         else:
-            st.write("No similar artists found")
+
+            similar_paintings=response_obj["similarPaintings"]
+
+            if len(similar_paintings) >= 1:
+
+                # Reformat rows
+                for row in similar_paintings:
+                    # artistName = f"{row['artistName']} ({row['artistBirthYear']}-{row['artistDeathYear']})"
+                    # link = f'<a href="{row["artistWikipediaLink"]} target="_blank">{row["artistWikipediaLink"]}</a>'
+                    # row["Artist"] = f"{artistName}"
+
+                    # Outputting full object for now, since this may be a complex object or string
+                    if "artist" in row:
+
+                        artist = row["artist"]
+
+                        if isinstance(artist, str):
+                            row["Artist"] = artist
+
+                        if isinstance(artist, dict):
+                            artistName = artist.get("artistName", "Unknown")
+                            birth = artist.get("artistBirthYear", "?")
+                            death = artist.get("artistDeathYear", "?")
+
+                            row["Artist"] = f"{artistName} ({birth}-{death})"
+
+                    else:
+                        row["Artist"] = "Unknown"
+
+                    paintingName = f"{row['painting']} ({row['yearOfPainting']})"
+                    row["Painting"] = f"{paintingName}"
+
+                    # Painting links are not reliable, so excluding for now
+                    short_link = row["paintingLink"][:100]
+                    link = f'<a href="{row["paintingLink"]} target="_blank">{short_link}</a>'
+                    row["PaintingLink"] = f"{link}"
+                    row["Year"] = row["yearOfPainting"]
+
+
+                 # Use upper-case syntax for Columns
+                df = pd.DataFrame( similar_paintings, columns=("Artist", "Painting", "Year"))
+                st_table = df.to_html(escape=False)
+                st.markdown(st_table, unsafe_allow_html=True)
+
+            else:
+                st.write("No similar paintings found")
 
     # Debug - JSON Output Tab
     if DEBUG:
@@ -475,7 +558,8 @@ def main():
             render_results(response_obj)
         except Exception as e:
             LOGGER.error("Top level error handling response", exc_info=True)
-            st.error("Error processing and rendering Example JSON results")
+            error_msg = e.args[0]
+            st.error("Error processing and rendering Example JSON results.  Reason = " +  error_msg)
 
     # Require OpenAI API key and file upload for processing
     else:
@@ -512,7 +596,8 @@ def main():
                 render_results(response_obj)
             except Exception as e:
                 LOGGER.error("Top level error handling response", exc_info=True)
-                st.error("Error processing and rendering OpenAI JSON results")
+                error_msg = e.args[0]
+                st.error("Error processing and rendering JSON results. Reason = " +  error_msg)
 
 
 

@@ -9,13 +9,11 @@ Art Analyzer is an app that uses GPT Vision (See: [OpenAI Platform](https://pla
 Can we really use AI as an art critic or expert? Yes and No. This app is a fun experiment to see how far along GPT Vision has come, and the results are generally very good and surprisingly detailed. But, if you are looking to analyze and critique artwork in a more official capacity feel free to defer to art historians, experts, and enthusiasts.
 
 
-
 Read more:
 
 **Blog Post** - https://eric-blue.com/2023/12/05/art-analyzer/
 
 **YouTube Video** - https://youtu.be/9-nDqjFrpk0?si=OjIyTMSvDYHY0d5o
-
 
 
 ## Tech
@@ -106,6 +104,10 @@ heroku open -a artanalyzer-eb
 - On occasion, GPT-4V does not like to provide artist details, including similar artists or paintings (e.g. while analyzing Mona Lisa, the following is returned "*I cannot name the artist, but this painting is one of the most recognized works in the world.*").  Often times, simply reloading and trying again will return successful results.
 
 
+## Version History
+
+- 0.2 - 12/11/23 - Improved error handling for GPT-4V API calls and image results
+- 0.1 - 12/04/23 - Initial release
 
 ## About
 

@@ -2,6 +2,7 @@
 {
   "summary": {
     "artist": "The artist who you think may have authored the work",
+    "paintingName: "The name of the painting or work of art you think this is",
     "subjectMatter": "Briefly describe the subject of the artwork",
     "medium": "Specify the medium or media used",  
     "overallImpression": "Describe the overall feeling or atmosphere conveyed"
