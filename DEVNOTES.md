@@ -12,7 +12,7 @@ Otherwise the latest development code resides in the main branch.
 Update README.md _Version History_ section and Tag the release
 
 ```
-make release VERSION=-0.x
+make release VERSION=v0.x
 ```
 
 Note: Attempts to recreate a new tagged release will fail.  
