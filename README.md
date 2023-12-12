@@ -1,4 +1,3 @@
-# 
 
 # Art Analyzer
 
