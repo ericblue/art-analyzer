@@ -74,6 +74,13 @@ def get_remote_ip() -> str:
 
     return session_info.request.remote_ip
 
+def get_forwarded_ip():
+
+    headers = _get_websocket_headers()
+    ip = headers.get('X-Forwarded-For', [''])[0]
+
+    return ip
+
 
 # Load from OPENAI_API_KEY env variable, otherwise allow users to set their own OpenAI API Key
 def get_openai_api_key():
@@ -639,6 +646,9 @@ def main():
 
             ip = get_remote_ip()
             LOGGER.info("Client IP: " + ip)
+
+            ip = get_forwarded_ip()
+            LOGGER.info("X-Forwarded-For IP: " + ip)
 
             headers = _get_websocket_headers()
             LOGGER.info("Websocket headers: " + str(headers))
