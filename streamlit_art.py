@@ -587,6 +587,10 @@ def main():
 
         if uploaded_file is not None:
 
+            ip = st.session_state.client_ip or st.experimental_get_query_params()['X-Forwarded-For'][0]
+            LOGGER.info("Client IP: " + ip)
+            LOGGER.info("File Uploaded: " + uploaded_file.name)
+
             image = Image.open(uploaded_file)
             display_image(image)
 
@@ -596,6 +600,7 @@ def main():
 
             try:
                 response_obj = analyze_image(uploaded_file, api_key)
+                LOGGER.info("Rendering results...")
                 render_results(response_obj)
             except Exception as e:
                 LOGGER.error("Top level error handling response", exc_info=True)
