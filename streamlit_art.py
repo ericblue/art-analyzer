@@ -77,7 +77,7 @@ def get_remote_ip() -> str:
 def get_forwarded_ip():
 
     headers = _get_websocket_headers()
-    ip = headers.get('X-Forwarded-For', [''])[0]
+    ip = headers.get('X-Forwarded-For')[0]
 
     return ip
 
