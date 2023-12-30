@@ -6,10 +6,8 @@ from streamlit.web.server.websocket_headers import _get_websocket_headers
 
 from PIL import Image, ImageDraw, ImageFont
 import os
-import pathlib
 from pathlib import Path
 import logging
-import numpy as np
 import pandas as pd
 import time
 import base64
@@ -30,6 +28,8 @@ LOAD_LOCAL_JSON = False
 
 @st.cache_resource
 def configure_logging(file_path, level=logging.INFO):
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+
     logger = logging.getLogger()
     logger.setLevel(level)
 
