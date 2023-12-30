@@ -1,4 +1,9 @@
 import streamlit as st
+from streamlit import runtime
+from streamlit.runtime.scriptrunner import get_script_run_ctx
+from streamlit.web.server.websocket_headers import _get_websocket_headers
+
+
 from PIL import Image, ImageDraw, ImageFont
 import os
 import pathlib
@@ -14,18 +19,46 @@ import sys
 import re
 import version
 
-# Enable logger
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
-
 # Debug mode
-DEBUG = False
+DEBUG = True
 
 # Save JSON response for testing
 SAVE_JSON = False
 
 # If LoadLocalJSON is enabled, load OpenAI JSON responses from disk
 LOAD_LOCAL_JSON = False
+
+@st.cache_resource
+def configure_logging(file_path, level=logging.INFO):
+    logger = logging.getLogger()
+    logger.setLevel(level)
+
+    file_handler = logging.FileHandler(file_path)
+    file_handler.setLevel(level)
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+
+    return logger
+
+def get_remote_ip() -> str:
+    """Get remote ip."""
+
+    try:
+        ctx = get_script_run_ctx()
+        if ctx is None:
+            return None
+
+        session_info = runtime.get_instance().get_client(ctx.session_id)
+        if session_info is None:
+            return None
+    except Exception as e:
+        return None
+
+    return session_info.request.remote_ip
+
 
 # Load from OPENAI_API_KEY env variable, otherwise allow users to set their own OpenAI API Key
 def get_openai_api_key():
@@ -585,10 +618,15 @@ def main():
 
         uploaded_file = st.file_uploader("Choose an image...")
 
+
+
         if uploaded_file is not None:
 
-            ip = st.session_state.client_ip or st.experimental_get_query_params()['X-Forwarded-For'][0]
+            ip = get_remote_ip()
             LOGGER.info("Client IP: " + ip)
+
+            headers = _get_websocket_headers()
+            LOGGER.info("Websocket headers: " + str(headers))
             LOGGER.info("File Uploaded: " + uploaded_file.name)
 
             image = Image.open(uploaded_file)
@@ -610,4 +648,6 @@ def main():
 
 
 if __name__ == '__main__':
+    log_file = os.path.join(os.getcwd(), 'logs', f'art-analyzer.log')
+    LOGGER = configure_logging(log_file)
     main()

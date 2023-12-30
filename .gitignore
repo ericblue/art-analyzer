@@ -15,3 +15,5 @@ out/
 debug
 .envrc
 .env
+logs
+ __pycache__/
