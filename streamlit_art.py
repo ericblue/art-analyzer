@@ -27,7 +27,7 @@ SAVE_JSON = False
 LOAD_LOCAL_JSON = False
 
 @st.cache_resource
-def configure_logging(file_path, level=logging.INFO):
+def configure_file_logging(file_path, level=logging.INFO):
     Path(file_path).parent.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger()
@@ -40,6 +40,21 @@ def configure_logging(file_path, level=logging.INFO):
     file_handler.setFormatter(formatter)
 
     logger.addHandler(file_handler)
+
+    return logger
+
+@st.cache_resource
+def configure_logging(level=logging.INFO):
+
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    handler = logging.StreamHandler(sys.stdout)
+
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+
+    logger.addHandler(handler)
 
     return logger
 
@@ -648,6 +663,7 @@ def main():
 
 
 if __name__ == '__main__':
-    log_file = os.path.join(os.getcwd(), 'logs', f'art-analyzer.log')
-    LOGGER = configure_logging(log_file)
+    #log_file = os.path.join(os.getcwd(), 'logs', f'art-analyzer.log')
+    #LOGGER = configure_file_logging(log_file)
+    LOGGER = configure_logging(logging.INFO)
     main()
