@@ -20,7 +20,7 @@ import re
 import version
 
 # Debug mode
-DEBUG = True
+DEBUG = False
 
 # Save JSON response for testing
 SAVE_JSON = False
