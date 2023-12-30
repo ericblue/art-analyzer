@@ -77,9 +77,11 @@ def get_remote_ip() -> str:
 def get_forwarded_ip():
 
     headers = _get_websocket_headers()
-    ip = headers.get('X-Forwarded-For')[0]
+    # Example: "X-Forwarded-For': '13.51.91.225, 162.158.90.188'"
+    x_forwarded_for = headers['X-Forwarded-For']
+    first_ip = x_forwarded_for.split(', ')[0]
 
-    return ip
+    return first_ip
 
 
 # Load from OPENAI_API_KEY env variable, otherwise allow users to set their own OpenAI API Key
